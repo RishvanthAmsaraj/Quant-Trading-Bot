@@ -1,0 +1,106 @@
+# ============================================================================
+# Quant Trading Bot Configuration
+# ============================================================================
+# All tuneable parameters live here so you can experiment without touching
+# the source code. Edit values, then run `python -m quant_trading_bot.main`.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Universe & data
+# ----------------------------------------------------------------------------
+data:
+  # Tickers to download from Yahoo Finance
+  tickers:
+    - AAPL
+    - MSFT
+    - GOOGL
+    - AMZN
+    - NVDA
+    - TSLA
+    - META
+    - JPM
+  # Lookback window (years) for historical data
+  period: "2y"
+  # Resample frequency: "1d", "1h", "30m" ...
+  interval: "1d"
+  # Local cache directory for downloaded CSVs
+  cache_dir: "data/cache"
+
+# ----------------------------------------------------------------------------
+# Technical indicators
+# ----------------------------------------------------------------------------
+indicators:
+  sma_fast: 20
+  sma_slow: 50
+  ema_fast: 12
+  ema_slow: 26
+  rsi_period: 14
+  macd_signal: 9
+  bb_period: 20
+  bb_std: 2.0
+  atr_period: 14
+  adx_period: 14
+
+# ----------------------------------------------------------------------------
+# Strategy parameters
+# ----------------------------------------------------------------------------
+strategies:
+  momentum:
+    lookback: 20          # window for momentum computation
+    threshold: 0.02       # +2% momentum triggers long
+    short_threshold: -0.02
+  mean_reversion:
+    rsi_oversold: 30
+    rsi_overbought: 70
+    bb_threshold: 0.05    # 5% from band edge
+  trend_following:
+    fast_ma: 20
+    slow_ma: 50
+    adx_threshold: 25     # only trade in trending markets
+
+# ----------------------------------------------------------------------------
+# Risk management
+# ----------------------------------------------------------------------------
+risk:
+  initial_capital: 100000.0
+  position_sizing: "kelly"          # "kelly" | "fixed_fractional" | "equal_weight"
+  kelly_fraction: 0.25              # use 1/4 Kelly by default for safety
+  fixed_fraction: 0.10              # 10% of equity per trade (fixed fractional)
+  max_position_pct: 0.20            # never more than 20% of portfolio in one name
+  stop_loss_pct: 0.05               # 5% stop loss
+  take_profit_pct: 0.15             # 15% take profit
+  trailing_stop_pct: 0.07           # 7% trailing stop
+  max_drawdown_pct: 0.20            # kill switch: stop trading if DD > 20%
+
+# ----------------------------------------------------------------------------
+# Backtester
+# ----------------------------------------------------------------------------
+backtest:
+  commission: 0.001                 # 0.1% per trade
+  slippage: 0.0005                  # 0.05% slippage
+  risk_free_rate: 0.02              # annualised, for Sharpe
+  trading_days_per_year: 252
+
+# ----------------------------------------------------------------------------
+# Machine-learning module
+# ----------------------------------------------------------------------------
+ml:
+  enabled: true
+  model: "lstm"                     # currently only LSTM is supported
+  lookback: 60                      # days of history per training sample
+  train_split: 0.80
+  epochs: 30
+  batch_size: 32
+  learning_rate: 0.001
+  hidden_units: 64
+  dropout: 0.2
+  early_stopping_patience: 5
+
+# ----------------------------------------------------------------------------
+# Visualisation
+# ----------------------------------------------------------------------------
+visualization:
+  output_dir: "results/plots"
+  save_format: "png"                # "png" | "html"
+  plotly_dashboard: true
+  show_in_notebook: false

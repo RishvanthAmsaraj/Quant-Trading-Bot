@@ -1,0 +1,22 @@
+# Core data + numerics
+numpy>=1.23
+pandas>=2.0
+scipy>=1.10
+
+# Market data
+yfinance>=0.2.30
+
+# Plotting
+matplotlib>=3.7
+seaborn>=0.12
+plotly>=5.18
+
+# Configuration
+pyyaml>=6.0
+
+# Machine learning (LSTM)
+tensorflow>=2.13
+
+# Testing + dev
+pytest>=7.4
+jupyter>=1.0
