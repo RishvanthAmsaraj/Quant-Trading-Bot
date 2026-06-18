@@ -1,43 +1,41 @@
-# 🤖 Quant Trading Bot
+# Quant Trading Bot
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tests](https://img.shields.io/badge/tests-pytest-yellow.svg)](#-running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-pytest-yellow.svg)](#running-the-tests)
 
-An end-to-end **algorithmic trading system** built in Python.  It
-combines classical quantitative techniques (technical indicators,
-mean-reversion / momentum / trend-following strategies, Kelly-criterion
-position sizing, full backtesting with risk-adjusted performance
-metrics) with a **deep-learning** module (LSTM-based price
-prediction) — the same kind of stack you'd see at a prop trading firm
-or quant hedge fund.
+An end-to-end algorithmic trading system built in Python. It combines
+classical quantitative techniques (technical indicators, mean-reversion /
+momentum / trend-following strategies, Kelly-criterion position sizing,
+full backtesting with risk-adjusted performance metrics) with a deep
+learning module (LSTM-based price prediction).
 
-The bot is designed to be **readable**, **configurable**, and
-**extensible**: every strategy, indicator and risk limit is defined in
-`configs/config.yaml`, and new strategies plug in by subclassing
-`Strategy` and registering them in `main.py`.
+The bot is designed to be readable, configurable, and extensible: every
+strategy, indicator and risk limit is defined in `configs/config.yaml`,
+and new strategies plug in by subclassing `Strategy` and registering them
+in `main.py`.
 
 ---
 
-## ✨ Features
+## Features
 
-| Module                | What it does |
-|-----------------------|--------------|
-| `data`                | Live OHLCV downloads from Yahoo Finance with on-disk CSV caching |
-| `indicators`          | RSI, MACD, Bollinger Bands, SMA/EMA, ATR, ADX (Wilder smoothing) |
-| `strategies`          | Momentum, Mean Reversion, Trend Following, Ensemble voting |
-| `risk`                | Kelly-criterion / fixed-fractional sizing, stop-loss, take-profit, trailing stop, drawdown kill switch |
-| `backtester`          | Event-driven engine, commission + slippage, full trade log |
-| `metrics`             | Sharpe, Sortino, Calmar, max drawdown, win rate, profit factor, CAGR, exposure |
-| `ml`                  | TensorFlow/Keras LSTM price predictor, pluggable into the same backtester |
-| `visualization`       | Matplotlib static plots + interactive Plotly HTML dashboard |
-| `utils`               | YAML config loader, structured logging |
-| `tests`               | Pytest unit tests for every module |
+| Module | Description |
+|--------|-------------|
+| `data` | Live OHLCV downloads from Yahoo Finance with on-disk CSV caching |
+| `indicators` | RSI, MACD, Bollinger Bands, SMA/EMA, ATR, ADX (Wilder smoothing) |
+| `strategies` | Momentum, Mean Reversion, Trend Following, Ensemble voting |
+| `risk` | Kelly-criterion / fixed-fractional sizing, stop-loss, take-profit, trailing stop, drawdown kill switch |
+| `backtester` | Event-driven engine, commission + slippage, full trade log |
+| `metrics` | Sharpe, Sortino, Calmar, max drawdown, win rate, profit factor, CAGR, exposure |
+| `ml` | TensorFlow/Keras LSTM price predictor, pluggable into the same backtester |
+| `visualization` | Matplotlib static plots + interactive Plotly HTML dashboard |
+| `utils` | YAML config loader, structured logging |
+| `tests` | Pytest unit tests for every module |
 
 ---
 
-## 📦 Project layout
+## Project Layout
 
 ```
 quant-trading-bot/
@@ -45,7 +43,7 @@ quant-trading-bot/
 │   └── config.yaml            # All tuneable parameters
 ├── quant_trading_bot/
 │   ├── data/loader.py         # yfinance wrapper + cache
-│   ├── indicators/            # RSI, MACD, BB, ATR, ADX …
+│   ├── indicators/            # RSI, MACD, BB, ATR, ADX
 │   ├── strategies/            # Momentum / MeanReversion / Trend / Ensemble
 │   ├── risk/manager.py        # Position sizing + stops
 │   ├── backtester/            # Engine + performance metrics
@@ -62,9 +60,9 @@ quant-trading-bot/
 
 ---
 
-## 🚀 Quick start
+## Quick Start
 
-### 1. Clone & install
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/RishvanthAmsaraj/quant-trading-bot.git
@@ -77,7 +75,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Run a full backtest
+### 2. Run a Full Backtest
 
 ```bash
 python -m quant_trading_bot.main
@@ -85,17 +83,14 @@ python -m quant_trading_bot.main
 
 This will:
 
-* download 2 years of daily OHLCV for `AAPL, MSFT, GOOGL, AMZN, NVDA, TSLA, META, JPM`
-* compute the full panel of technical indicators
-* run **Momentum**, **MeanReversion**, **TrendFollowing** and the
-  **Ensemble** strategy against each ticker
-* print a metrics summary (Sharpe, max drawdown, win rate …) for every
-  backtest
-* write matplotlib PNGs and an interactive Plotly HTML dashboard to
-  `results/plots/`
-* write a `results/summary.json` aggregating everything
+- Download 2 years of daily OHLCV for `AAPL, MSFT, GOOGL, AMZN, NVDA, TSLA, META, JPM`
+- Compute the full panel of technical indicators
+- Run Momentum, MeanReversion, TrendFollowing and the Ensemble strategy against each ticker
+- Print a metrics summary (Sharpe, max drawdown, win rate, etc.) for every backtest
+- Write matplotlib PNGs and an interactive Plotly HTML dashboard to `results/plots/`
+- Write a `results/summary.json` aggregating everything
 
-### 3. Run with custom tickers
+### 3. Run with Custom Tickers
 
 ```bash
 python -m quant_trading_bot.main --tickers AAPL MSFT NVDA
@@ -107,7 +102,7 @@ python -m quant_trading_bot.main --tickers AAPL MSFT NVDA
 python -m quant_trading_bot.main --lstm
 ```
 
-### 5. Try the quick walkthrough
+### 5. Try the Quick Walkthrough
 
 ```bash
 python quant_trading_bot/notebooks/example_walkthrough.py
@@ -115,9 +110,9 @@ python quant_trading_bot/notebooks/example_walkthrough.py
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
-All knobs are in `configs/config.yaml`:
+All parameters are in `configs/config.yaml`:
 
 ```yaml
 data:
@@ -160,84 +155,91 @@ ml:
 
 ---
 
-## 🧠 Architecture overview
+## Architecture Overview
 
 ```
-                    ┌────────────┐
-                    │  config    │
-                    └─────┬──────┘
-                          ▼
-                    ┌────────────┐
-                    │  yfinance  │  (cached CSV)
-                    └─────┬──────┘
-                          ▼
-                    ┌────────────┐
-                    │ indicators │
-                    └─────┬──────┘
-                          ▼
-         ┌────────────────┼────────────────┐
-         ▼                ▼                ▼
+                    +------------+
+                    |   config   |
+                    +------+-----+
+                           |
+                           v
+                    +------------+
+                    |  yfinance  |  (cached CSV)
+                    +------+-----+
+                           |
+                           v
+                    +------------+
+                    | indicators |
+                    +------+-----+
+                           |
+          +----------------+----------------+
+          |                |                |
+          v                v                v
    MomentumStrategy  MeanReversion   TrendFollowing
-         └────────────────┬────────────────┘
-                          ▼
-                    ┌────────────┐
-                    │  risk      │  (sizing + stops)
-                    └─────┬──────┘
-                          ▼
-                    ┌────────────┐
-                    │ backtester │  (PnL, equity, trades)
-                    └─────┬──────┘
-                          ▼
-                    ┌────────────┐
-                    │  metrics   │  (Sharpe, drawdown …)
-                    └─────┬──────┘
-                          ▼
-                    ┌────────────┐
-                    │ dashboard  │  (matplotlib + plotly)
-                    └────────────┘
+          +----------------+----------------+
+                           |
+                           v
+                    +------------+
+                    |    risk    |  (sizing + stops)
+                    +------+-----+
+                           |
+                           v
+                    +------------+
+                    | backtester |  (PnL, equity, trades)
+                    +------+-----+
+                           |
+                           v
+                    +------------+
+                    |   metrics  |  (Sharpe, drawdown, etc.)
+                    +------+-----+
+                           |
+                           v
+                    +------------+
+                    | dashboard  |  (matplotlib + plotly)
+                    +------------+
 
-  ┌────────────┐
-  │  LSTM ml   │── plugs into the same strategy interface
-  └────────────┘
+  +------------+
+  |  LSTM ml   |-- plugs into the same strategy interface
+  +------------+
 ```
 
 ---
 
-## 🧪 Running the tests
+## Running the Tests
 
 ```bash
 pytest -v quant_trading_bot/tests
 ```
 
-The tests use a synthetic price generator so they don't need internet
+The tests use a synthetic price generator so they do not need internet
 access.
 
 ---
 
-## 🛠️ Extending the bot
+## Extending the Bot
 
-* **Add a new indicator** → drop it into `indicators/technical.py` and
+- **Add a new indicator**: Drop it into `indicators/technical.py` and
   expose it in `add_all_indicators`.
-* **Add a new strategy** → subclass `Strategy` in
-  `strategies/base.py` and register it in `main.py` →
+- **Add a new strategy**: Subclass `Strategy` in
+  `strategies/base.py` and register it in `main.py` via
   `_build_strategies`.
-* **Add a new ML model** → keep the public interface
+- **Add a new ML model**: Keep the public interface
   (`fit(close, **kwargs)` + `predict(close) -> pd.Series`) and wrap
   it in a strategy that lives next to `lstm_strategy.py`.
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
-This codebase is for **educational and research purposes only**.  No
-part of it constitutes financial advice.  Past performance of any
-strategy — backtested or otherwise — is **not** indicative of future
-results.  Live trading carries the risk of substantial loss; do not
+This codebase is for **educational and research purposes only**. No
+part of it constitutes financial advice. Past performance of any
+strategy -- backtested or otherwise -- is **not** indicative of future
+results. Live trading carries the risk of substantial loss; do not
 deploy this bot with real money without extensive out-of-sample
 testing, slippage / liquidity analysis and proper regulatory review.
 
 ---
 
-## 📄 License
+## License
 
-MIT — see [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE).

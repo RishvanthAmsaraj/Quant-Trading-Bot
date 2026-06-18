@@ -126,9 +126,8 @@ def run(
             LOGGER.warning("No columns found for %s - skipping", t)
             continue
         df_t = raw[cols].copy()
-        df_t.columns = [c.replace(suffix, "") for c in cols]
         df_t = add_all_indicators(
-            df_t, ticker="",
+            df_t, ticker=t,
             sma_fast=ind_cfg["sma_fast"],
             sma_slow=ind_cfg["sma_slow"],
             ema_fast=ind_cfg["ema_fast"],
@@ -181,7 +180,8 @@ def run(
     results_summary: Dict[str, dict] = {}
 
     for t, df_t in per_ticker.items():
-        benchmark_equity = df_t["Close"] * (cfg.risk["initial_capital"] / df_t["Close"].iloc[0])
+        close_col = f"Close_{t}"
+        benchmark_equity = df_t[close_col] * (cfg.risk["initial_capital"] / df_t[close_col].iloc[0])
         for name, strat in chosen.items():
             backtester.strategy = strat
             try:
