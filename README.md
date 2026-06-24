@@ -22,13 +22,14 @@ in `main.py`.
 
 | Module | Description |
 |--------|-------------|
+| `app` | **Streamlit web UI** — pick tickers, tune parameters, run & download results |
 | `data` | Live OHLCV downloads from Yahoo Finance with on-disk CSV caching |
 | `indicators` | RSI, MACD, Bollinger Bands, SMA/EMA, ATR, ADX (Wilder smoothing) |
 | `strategies` | Momentum, Mean Reversion, Trend Following, Ensemble voting |
 | `risk` | Kelly-criterion / fixed-fractional sizing, stop-loss, take-profit, trailing stop, drawdown kill switch |
 | `backtester` | Event-driven engine, commission + slippage, full trade log |
 | `metrics` | Sharpe, Sortino, Calmar, max drawdown, win rate, profit factor, CAGR, exposure |
-| `ml` | TensorFlow/Keras LSTM price predictor, pluggable into the same backtester |
+| `ml` | LSTM price predictor (requires TensorFlow-compatible Python), pluggable into the same backtester |
 | `visualization` | Matplotlib static plots + interactive Plotly HTML dashboard |
 | `utils` | YAML config loader, structured logging |
 | `tests` | Pytest unit tests for every module |
@@ -62,23 +63,38 @@ quant-trading-bot/
 
 ## Quick Start
 
-### 1. Clone and Install
+### 0. Web App (Recommended)
+
+The easiest way to use the bot:
 
 ```bash
-git clone https://github.com/RishvanthAmsaraj/quant-trading-bot.git
 cd quant-trading-bot
-
-# Optional: create a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
+venv/bin/python app/server.py
+# → Open http://localhost:8501
 ```
 
-### 2. Run a Full Backtest
+Pick your tickers, tune parameters, run backtests, and view/download results — all from the browser. Features:
+- Sidebar parameters (tickers, period, strategies, capital, sizing, stop/take-profit)
+- Summary metrics panel
+- Color-coded results table with CSV download
+- Interactive equity curve charts (Plotly)
+- Detailed trade log
+- Raw OHLCV + indicators data
+- Dark/light mode toggle
+
+Pick your tickers, tune parameters, run backtests, and download results — all from the browser.
+
+### 1. CLI
 
 ```bash
-python -m quant_trading_bot.main
+cd quant-trading-bot
+venv/bin/python -m quant_trading_bot.main --tickers AAPL MSFT
+```
+
+### 2. Run a Full Backtest (CLI)
+
+```bash
+venv/bin/python -m quant_trading_bot.main
 ```
 
 This will:
@@ -93,19 +109,13 @@ This will:
 ### 3. Run with Custom Tickers
 
 ```bash
-python -m quant_trading_bot.main --tickers AAPL MSFT NVDA
+venv/bin/python -m quant_trading_bot.main --tickers AAPL MSFT NVDA
 ```
 
-### 4. Train the LSTM (CPU-friendly, ~2-3 min/ticker)
+### 4. Try the Quick Walkthrough
 
 ```bash
-python -m quant_trading_bot.main --lstm
-```
-
-### 5. Try the Quick Walkthrough
-
-```bash
-python quant_trading_bot/notebooks/example_walkthrough.py
+venv/bin/python quant_trading_bot/notebooks/example_walkthrough.py
 ```
 
 ---

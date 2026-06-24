@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuantBot — Algorithmic Trading Backtester</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">Q</div>
+        <span>QuantBot</span>
+      </div>
+      <div class="app-toolbar">
+        <button class="toolbar-btn" id="theme-toggle" type="button">Dark</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- ========== SIDEBAR ========== -->
+      <aside class="sidebar-card card">
+        <div class="card-title">Parameters</div>
+
+        <div class="form-group">
+          <label for="tickers">Tickers (comma-separated)</label>
+          <input id="tickers" type="text" value="AAPL, MSFT, NVDA" placeholder="e.g. AAPL, MSFT, BTC-USD">
+        </div>
+
+        <div class="form-group">
+          <label for="period">Data Period</label>
+          <select id="period">
+            <option value="6mo">6 Months</option>
+            <option value="1y" selected>1 Year</option>
+            <option value="2y">2 Years</option>
+            <option value="3y">3 Years</option>
+            <option value="5y">5 Years</option>
+            <option value="max">Max</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Strategies</label>
+          <div class="strategy-group" id="strategy-group">
+            <label class="strategy-chip selected" data-value="Momentum">
+              <input type="checkbox" checked> Momentum
+            </label>
+            <label class="strategy-chip selected" data-value="MeanReversion">
+              <input type="checkbox" checked> Mean Rev
+            </label>
+            <label class="strategy-chip selected" data-value="TrendFollowing">
+              <input type="checkbox" checked> Trend Follow
+            </label>
+            <label class="strategy-chip selected" data-value="Ensemble">
+              <input type="checkbox" checked> Ensemble
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="capital">Initial Capital ($)</label>
+          <input id="capital" type="number" value="100000" min="1000" step="5000">
+        </div>
+
+        <div class="form-group">
+          <label for="sizing">Position Sizing</label>
+          <select id="sizing">
+            <option value="kelly">Kelly Criterion</option>
+            <option value="fixed_fractional">Fixed Fractional</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="stop-loss">Stop Loss (%)</label>
+          <input id="stop-loss" type="number" value="5" min="0.5" max="30" step="0.5">
+        </div>
+
+        <div class="form-group">
+          <label for="take-profit">Take Profit (%)</label>
+          <input id="take-profit" type="number" value="10" min="1" max="60" step="0.5">
+        </div>
+
+        <button class="btn-primary" id="run-btn">▶ Run Backtest</button>
+      </aside>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <section class="card" id="results-panel">
+        <div class="card-title">Results</div>
+
+        <!-- Placeholder -->
+        <div class="results-placeholder" id="placeholder">
+          <div class="icon">📈</div>
+          <p>Configure your parameters and hit <strong>Run Backtest</strong></p>
+          <p style="font-size:12px;">Results will appear here with metrics, charts, and downloadable data.</p>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-container" id="loading" style="display:none;">
+          <div class="spinner"></div>
+          <div class="loading-text">Running backtests…</div>
+        </div>
+
+        <!-- Error -->
+        <div id="error-container" style="display:none;"></div>
+
+        <!-- Content (hidden initially) -->
+        <div id="results-content" style="display:none;">
+          <!-- Summary metrics -->
+          <div class="metrics-grid" id="summary-metrics"></div>
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab active" data-tab="table">Results Table</button>
+            <button class="tab" data-tab="chart">Charts</button>
+            <button class="tab" data-tab="trades">Trade Log</button>
+            <button class="tab" data-tab="data">Raw Data</button>
+          </div>
+
+          <!-- Tab: Results Table -->
+          <div class="tab-content active" id="tab-table">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+              <button class="btn-download" id="download-btn">📥 Download CSV</button>
+            </div>
+            <div class="results-table-wrapper">
+              <table class="results-table" id="results-table">
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab: Charts -->
+          <div class="tab-content" id="tab-chart">
+            <div class="form-group" style="max-width:300px;">
+              <label for="chart-select">Select Run</label>
+              <select id="chart-select"></select>
+            </div>
+            <div id="plotly-container" style="min-height:400px;">
+              <div class="results-placeholder" style="padding:40px;">
+                <p>Select a run to see its equity curve chart.</p>
+              </div>
+            </div>
+            <div id="plotly-iframe-container" style="margin-top:12px;"></div>
+          </div>
+
+          <!-- Tab: Trade Log -->
+          <div class="tab-content" id="tab-trades">
+            <div class="form-group" style="max-width:300px;">
+              <label for="trades-select">Select Run</label>
+              <select id="trades-select"></select>
+            </div>
+            <div id="trades-container"></div>
+          </div>
+
+          <!-- Tab: Raw Data -->
+          <div class="tab-content" id="tab-data">
+            <div class="form-group" style="max-width:300px;">
+              <label for="data-ticker-select">Select Ticker</label>
+              <select id="data-ticker-select"></select>
+            </div>
+            <div class="data-table-wrapper" id="data-table-wrapper"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <a href="https://github.com/RishvanthAmsaraj/quant-trading-bot">GitHub</a> · Built for research purposes
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
