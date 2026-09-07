@@ -218,15 +218,15 @@ function renderSummary(s) {
     </div>
     <div class="metric-card">
       <div class="label">Best Sharpe</div>
-      <div class="value positive" style="font-size:14px;">${s.best_sharpe.strategy}<br>${s.best_sharpe.ticker} (${s.best_sharpe.value})</div>
+      <div class="value ${s.best_sharpe.value >= 0 ? 'positive' : 'negative'}"><span class="main">${s.best_sharpe.value}</span><span class="sub">${s.best_sharpe.strategy} · ${s.best_sharpe.ticker}</span></div>
     </div>
     <div class="metric-card">
       <div class="label">Best Return</div>
-      <div class="value positive" style="font-size:14px;">${s.best_return.strategy}<br>${s.best_return.ticker} (${s.best_return.value}%)</div>
+      <div class="value ${s.best_return.value >= 0 ? 'positive' : 'negative'}"><span class="main">${s.best_return.value}%</span><span class="sub">${s.best_return.strategy} · ${s.best_return.ticker}</span></div>
     </div>
     <div class="metric-card">
       <div class="label">Most Trades</div>
-      <div class="value accent" style="font-size:14px;">${s.most_trades.strategy}<br>${s.most_trades.ticker} (${s.most_trades.value})</div>
+      <div class="value accent"><span class="main">${s.most_trades.value}</span><span class="sub">${s.most_trades.strategy} · ${s.most_trades.ticker}</span></div>
     </div>
   `;
 }
@@ -241,7 +241,8 @@ function renderTable(results) {
 
   const body = document.getElementById('table-body');
   body.innerHTML = results.map(r => {
-    const cls = v => v >= 0 ? 'pos' : 'neg';
+    // 0 is neutral — only strictly positive/negative values get P&L colors
+    const cls = v => v > 0 ? 'pos' : (v < 0 ? 'neg' : 'neutral');
     return '<tr>' + keys.map((k, i) => {
       let v = r[k];
       if (typeof v === 'number') {
@@ -275,25 +276,26 @@ function renderChart(results, idx) {
     const dates = eq.map(e => e.date);
     const values = eq.map(e => e.equity);
 
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     const trace = {
       x: dates,
       y: values,
       type: 'scatter',
       mode: 'lines',
       name: `${r.strategy} — ${r.ticker}`,
-      line: { color: '#ff6200', width: 2 },
+      line: { color: dark ? '#d8b36a' : '#a8872f', width: 2 },
       fill: 'tozeroy',
-      fillcolor: 'rgba(255, 98, 0, 0.08)',
+      fillcolor: dark ? 'rgba(216, 179, 106, 0.08)' : 'rgba(168, 135, 47, 0.08)',
     };
 
     const layout = {
       title: { text: `${r.strategy} — ${r.ticker} Equity Curve`, font: { size: 14 } },
-      xaxis: { title: 'Date', gridcolor: '#e3e6ec' },
-      yaxis: { title: 'Portfolio Value ($)', gridcolor: '#e3e6ec' },
+      xaxis: { title: 'Date', gridcolor: dark ? 'rgba(255,255,255,0.06)' : '#e5e3da' },
+      yaxis: { title: 'Portfolio Value ($)', gridcolor: dark ? 'rgba(255,255,255,0.06)' : '#e5e3da' },
       margin: { t: 40, r: 20, b: 40, l: 60 },
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'transparent',
-      font: { family: 'Poppins, sans-serif', size: 12 },
+      font: { family: 'Inter, sans-serif', size: 12, color: dark ? '#99a1ad' : '#6d727c' },
       hovermode: 'x unified',
     };
 
@@ -326,11 +328,13 @@ function renderTrades(idx) {
   const list = document.createElement('div');
   trades.forEach(t => {
     const pnlClass = t.pnl >= 0 ? 'pos' : 'neg';
+    const side = String(t.side || '').toLowerCase();
+    const sideClass = side === 'buy' ? 'buy' : 'sell';
     list.innerHTML += `
       <div class="trade-entry">
         <div class="trade-header">
-          <span>${escapeHtml(t.side.toUpperCase())} ${escapeHtml(r.ticker)}</span>
-          <span class="${pnlClass}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)} (${t.return_pct >= 0 ? '+' : ''}${t.return_pct.toFixed(2)}%)</span>
+          <span><span class="side-badge ${sideClass}">${escapeHtml((t.side || '').toUpperCase())}</span>${escapeHtml(r.ticker)}</span>
+          <span class="pnl ${pnlClass}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)} (${t.return_pct >= 0 ? '+' : ''}${t.return_pct.toFixed(2)}%)</span>
         </div>
         <div class="trade-detail">Entry: ${t.entry_date} @ $${t.entry_price} → Exit: ${t.exit_date} @ $${t.exit_price}</div>
       </div>

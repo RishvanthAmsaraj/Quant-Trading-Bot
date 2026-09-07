@@ -20,3 +20,6 @@ tensorflow>=2.13
 # Testing + dev
 pytest>=7.4
 jupyter>=1.0
+
+# Web UI
+flask>=3.0.0
