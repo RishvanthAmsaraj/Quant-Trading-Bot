@@ -62,6 +62,7 @@ class Backtester:
         slippage: float = 0.0005,
         risk_free_rate: float = 0.02,
         trading_days_per_year: int = 252,
+        exit_cooldown_bars: int = 2,
     ) -> None:
         self.strategy = strategy
         self.risk_manager = risk_manager
@@ -69,6 +70,10 @@ class Backtester:
         self.slippage = slippage
         self.risk_free_rate = risk_free_rate
         self.trading_days_per_year = trading_days_per_year
+        # Bars to stay flat before re-entering the SAME side after an exit.
+        # Kills stop-loss churn: without it a persistent signal re-opens the
+        # position right after every stop, paying commissions on whipsaws.
+        self.exit_cooldown_bars = exit_cooldown_bars
 
     # ------------------------------------------------------------------ #
     def run(
@@ -99,8 +104,11 @@ class Backtester:
         entry_price: Optional[float] = None
         entry_time: Optional[pd.Timestamp] = None
         entry_qty: float = 0.0
+        # Re-entry cooldown state: bar index + side of the last exit
+        last_exit_bar: int = -10**9
+        last_exit_side: int = 0
 
-        for ts, price in prices.items():
+        for bar_i, (ts, price) in enumerate(prices.items()):
             if np.isnan(price):
                 equity.loc[ts] = prev_equity
                 continue
@@ -116,6 +124,8 @@ class Backtester:
             # 2) Check exit conditions first (stops / targets)
             exit_reason = self.risk_manager.check_exit(price)
             if exit_reason and self.risk_manager.state.side != PositionSide.FLAT:
+                last_exit_side = self._side_value(self.risk_manager.state.side)
+                last_exit_bar = bar_i
                 pnl = self._close_position(price, ts, reason=exit_reason, trades=trades, entry_price=entry_price, entry_time=entry_time, qty=entry_qty)
                 entry_price = None
                 entry_time = None
@@ -123,6 +133,15 @@ class Backtester:
 
             # 3) Generate desired position
             target_signal = int(signals.loc[ts])
+            # Cooldown: don't re-open the same side right after an exit
+            # (prevents churning into the same signal post stop/target).
+            if (
+                self.exit_cooldown_bars > 0
+                and target_signal != 0
+                and target_signal == last_exit_side
+                and (bar_i - last_exit_bar) < self.exit_cooldown_bars
+            ):
+                target_signal = 0
             if self.risk_manager.state.side == PositionSide.FLAT and target_signal != 0:
                 size_value = self.risk_manager.size_position(price, target_signal)
                 qty = size_value / max(price, 1e-9)
@@ -178,7 +197,9 @@ class Backtester:
             return s.cash
         if s.side == PositionSide.LONG:
             return s.cash + s.position_qty * price
-        return s.cash + s.position_qty * (2 * s.position_avg_price - price)  # short
+        # SHORT: cash already holds the sale proceeds (+qty * entry); the
+        # liability is the current cost to buy the shares back.
+        return s.cash - s.position_qty * price
 
     def _open_position(
         self, price: float, ts: pd.Timestamp, signal: int, qty: float, trades: List[Dict]
@@ -189,25 +210,25 @@ class Backtester:
         cost = qty * fill_price
         commission = cost * self.commission
         s = self.risk_manager.state
-        s.cash -= cost + commission
+        if signal > 0:
+            # LONG: buy the shares — cash out.
+            s.cash -= cost + commission
+        else:
+            # SHORT: sell borrowed shares — the sale proceeds arrive as cash.
+            s.cash += cost - commission
         s.position_qty = qty
         s.position_avg_price = fill_price
         s.side = PositionSide.LONG if signal > 0 else PositionSide.SHORT
         self.risk_manager.highest_since_entry = fill_price
         self.risk_manager.lowest_since_entry = fill_price
-        trades.append(
-            {
-                "entry_time": ts,
-                "exit_time": pd.NaT,
-                "side": s.side.value,
-                "entry_price": fill_price,
-                "exit_price": np.nan,
-                "qty": qty,
-                "pnl": 0.0,
-                "return_pct": 0.0,
-                "reason": "open",
-            }
-        )
+        # Keep the opening leg on the engine (not the log): a completed row
+        # is appended once at close so the log/win-rate see one row per trade.
+        self._open_trade = {
+            "entry_date": ts,
+            "side": s.side.value,
+            "entry_price": fill_price,
+            "qty": qty,
+        }
 
     def _close_position(
         self,
@@ -228,14 +249,14 @@ class Backtester:
         if s.side == PositionSide.LONG:
             pnl = (fill_price - entry_price) * qty - commission
             s.cash += proceeds - commission
-        else:  # SHORT
+        else:  # SHORT: buy the shares back — cash out.
             pnl = (entry_price - fill_price) * qty - commission
-            s.cash += proceeds - 2 * entry_price * qty - commission
+            s.cash -= proceeds + commission
         return_pct = pnl / max(entry_price * qty, 1e-9)
         trades.append(
             {
-                "entry_time": entry_time,
-                "exit_time": ts,
+                "entry_date": entry_time,
+                "exit_date": ts,
                 "side": s.side.value,
                 "entry_price": entry_price,
                 "exit_price": fill_price,
