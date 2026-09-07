@@ -23,8 +23,6 @@ document.querySelectorAll('.strategy-chip').forEach(chip => {
   chip.addEventListener('click', (e) => {
     e.preventDefault();
     chip.classList.toggle('selected');
-    const cb = chip.querySelector('input');
-    cb.checked = chip.classList.contains('selected');
   });
 });
 

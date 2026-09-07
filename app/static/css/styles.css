@@ -260,20 +260,20 @@ html, body {
   box-shadow: 0 0 0 3px var(--color-input-focus);
 }
 
-/* ===== Strategy chips ===== */
+/* ===== Strategy chips: text-only toggle pills ===== */
 .strategy-group {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .strategy-chip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 9px 12px;
+  justify-content: center;
+  padding: 8px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 12.5px;
   font-weight: 500;
   color: var(--color-text-muted);
@@ -283,27 +283,16 @@ html, body {
   background: var(--color-surface);
 }
 
-.strategy-chip input {
-  width: auto;
-  accent-color: var(--accent);
-  margin: 0;
-  pointer-events: none;
+.strategy-chip:hover {
+  border-color: var(--accent-border);
+  color: var(--color-text);
 }
 
 .strategy-chip.selected {
   border-color: var(--accent-border);
   background: var(--accent-soft);
-  color: var(--color-text);
-}
-
-.strategy-chip.selected::after {
-  content: '';
-  margin-left: auto;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* ===== Buttons ===== */
